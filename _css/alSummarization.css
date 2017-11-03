@@ -1,0 +1,91 @@
+body {background-color: black; margin-top: 0;}
+h1 {color: white; text-align: center; font-family: 'Arial',sans-serif; text-shadow: 0px 2px 5px blue; margin-bottom: 0; margin-top: 0; padding: 0;}
+h2 {color: white;  font-size: 14px; font-family: 'Arial',sans-serif; font-weight: normal; margin: 0;}
+h2 a {color: white;}
+.caption {background: linear-gradient(#333 33%, #000); width: 500px; text-align: center; margin-left: -150px; margin-top: -2px; z-index: 1;border: 3px solid white; display: none; border-top: 0; padding: 5px 0 5px 0; border-radius: 25px; border-top-left-radius: 0; border-top-right-radius: 0; box-shadow: 0px 10px 20px 0px #000;}
+p#count {color: white; bottom: 10px; left: 10px; position: absolute; z-index: 50;}
+ul#viewSwitcher {display: block; background-color: black;  text-align: center; bottom: 0; margin: 0; padding: 5px 0 5px 0; z-index: 99; width: 100%; z-index: 999; position: fixed;}
+ul#viewSwitcher li {background-color: white; color: black; float: left; border-radius: 10px; margin-right: 5px; margin-bottom: 0px; border: 3px solid white;}
+ul#viewSwitcher li a {width: 300px; display: block; text-decoration: none; font-weight: bold;}
+ul#viewSwitcher li:hover {background-color: #ccc; cursor: pointer;}
+ul#viewSwitcher li.active {border: 3px solid green; background-color: green; color: white;}
+ul#viewSwitcher li.active:hover {cursor: default;}
+
+.floatLeft {float: left;}
+.floatRight {float: right;}
+
+#gv, #timeline, #coverflow {margin-top: 1.75em;}
+
+#gv {height: 100%; overflow: auto;}
+#gv .hoverText {position: relative; top: 0; left: 0; font-size: 10px; color: blue;}
+#gv .hoverText h2 {margin: 0;}
+figure {padding: 0; margin: 0;}
+.insufficientHamming {display: none;}
+
+#timeline {background-color: white; display:none;}
+.vis.timeline .item.dot.inSummarization {border-color: green;}
+.vis.timeline .item.dot.notInSummarization {border-color: red;}
+
+#showJSON {display:block; position: absolute; top: 0px; left: 0px; }
+#showJSON:hover {cursor: pointer; }
+#json {width: 25%; height: 25%; position: absolute; top: 15px; left: 5px; z-index: 999;}
+
+#gv div {border: 1px solid black;}
+#gv div img {background-color: white;}
+
+#dataState {color: white;}
+
+
+body #viewSwitcher li {color: white; background-repeat: no-repeat; background-position: center center; list-style-type: none;}
+body #viewSwitcher li a {height: 50px; width: 100px; margin-top: -20px;}
+body #viewSwitcher li#switcher_coverFlow_li {background-image: url('../_images/coverflow.png'); }
+body #viewSwitcher li#switcher_gridView_li {background-image: url('../_images/grid.png'); }
+body #viewSwitcher li#switcher_timeline_li {background-image: url('../_images/timeline.png'); }
+
+
+body[data-access='interface'] {}
+body[data-access='wayback'] {background-color: white; padding-top: 2.0em;}
+body[data-access='embed'] {background-color: white; padding-top: 2.0em;}
+
+body[data-access='interface'] .wayback,   body[data-access='interface'] .embed   {display: none;}
+body[data-access='wayback']   .interface, body[data-access='interface'] .embed   {display: none;}
+body[data-access='embed']     .interface, body[data-access='interface'] .wayback {display: none;}
+
+body[data-access='wayback'] .reflection {display: none;}
+body[data-access='wayback'] .image-block > img, body[data-access='wayback'] .ui-state-active > img {box-shadow: 0;}
+body[data-access='wayback'] #dataState {color: black;}
+body[data-access='wayback'] #viewSwitcher {color: #3EAAB8; background-color: transparent; font-family: 'Lucida Grande',Arial,sans-serif; display: inline; text-align: center; margin: 0; padding: 0;left: auto; width: auto;}
+body[data-access='wayback'] #viewSwitcher li {color: black; border: 1px solid #3EAAB8; display: inline;}
+body[data-access='wayback'] #viewSwitcher li.active {background-color: #3EAAB8;}
+body[data-access='wayback'] #viewSwitcher li.active a {color: #3EAAB8;}
+
+
+body[data-access='embed'] .reflection {display: none;}
+body[data-access='embed'] .image-block > img, body[data-access='embed'] .ui-state-active > img {box-shadow: 0;}
+body[data-access='embed'] #dataState {color: black;}
+body[data-access='embed'] #viewSwitcher {color: black; background-color: transparent; font-family: 'Lucida Grande',Arial,sans-serif; display: inline; text-align: center; margin: 0; padding: 0;left: auto; width: auto;}
+body[data-access='embed'] #viewSwitcher li {color: black; border: 1px solid #3EAAB8; display: inline;  }
+body[data-access='embed'] #viewSwitcher li.active {background-color: #3EAAB8;}
+body[data-access='embed'] #viewSwitcher li.active a {color: #3EAAB8;}
+
+body[data-strategy='alSummarization'] {}
+body[data-strategy='random'] {}
+body[data-strategy='monthly'] {}
+body[data-strategy='yearly'] {}
+
+body .ui-state-active .simhashValue, body .ui-state-active  .hammingDistanceValue,
+ body .simhashValue, body .hammingDistanceValue {display: none;}
+body[data-strategy='alSummarization'] .ui-state-active  .simhashValue,
+ body[data-strategy='alSummarization'] .ui-state-active .hammingDistanceValue,
+ body[data-strategy='alSummarization'] .hammingDistanceValue,
+ body[data-strategy='alSummarization'] .hammingDistanceValue
+ {display: block;}
+
+
+
+#subnav {width: 400px; margin: 0 0 0 33%; color: white; font-family: "Myriad Pro", sans-serif; position: absolute; z-index: 9;}
+#subnav span {width: 35%; text-align: center; }
+#subnav label {margin-right: 5px; margin-left: 10px;}
+#subnav span input {margin: 0 0px;}
+#subnav span input[type='submit'] {}
+body[data-access='embed'] #subnav, body[data-access='wayback'] #subnav {color: #3EAAB8; font-weight: bold; text-shadow: 1px 1px 0 #fff;}
