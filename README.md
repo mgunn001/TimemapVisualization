@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ArchiveThumbnails
 ================
 
@@ -59,3 +60,6 @@ $ docker-compose up -d
 ```
 
 The `docker-compose.yml` file has port mapping as described in the previous section. Additionally it also makes the generated thumbnail persistent on the host machine in the `thumbnails` directory under this checked out code directory. Please feel free to modify or inherit from the `docker-compose.yml` file according to your needs.
+=======
+# TimemapVisualization
+>>>>>>> 280830f6acd8114c267c730d77d8387c787ff82e
