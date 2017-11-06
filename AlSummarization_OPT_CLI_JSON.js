@@ -74,6 +74,8 @@ var zlib = require('zlib')
 var app = express()
 var host = 'http://localhost' // Format: scheme://hostname
 const thumbnailServicePort = 3000
+var localAssetServerPort = argv.ap ? argv.a : 3001
+
 var thumbnailServer = host + ':' + thumbnailServicePort + '/'
 
 
@@ -106,7 +108,8 @@ function main () {
                '*******************************').blue)
   ConsoleLogIfRequired("--By Mahee - for understanding")
 
-   var endpoint = new PublicEndpoint()
+  startLocalAssetServer()
+  var endpoint = new PublicEndpoint()
 
   //This route is just for testing
   app.get('/hello', (request, response) => {
@@ -139,6 +142,25 @@ function main () {
   })
 
 
+}
+
+
+
+/**
+* Create access point for resources local to the interface to be queried. This differs
+*  from handling requests from clients.
+*/
+function startLocalAssetServer () {
+  connect().use(
+    serveStatic(
+      __dirname,
+      {'setHeaders': function (res,path) {
+          res.setHeader('Access-Control-Allow-Origin', '*')
+        }
+      }
+    )
+  ).listen(localAssetServerPort)
+  console.log('* ' + ('Local resource (.png,simhashes etc.) server listening on Port ' + localAssetServerPort + '...').red)
 }
 
 
@@ -232,7 +254,7 @@ function PublicEndpoint () {
     // Override the default access parameter if the user has supplied a value
     //  via query parameters
     if (query.primesource) {
-      primeSource = query.primesource
+      primeSource = query.primesource.toLowerCase()
     }
 
     if (!theEndPoint.isAValidSourceParameter(primeSource)) { // A bad access parameter was passed in
