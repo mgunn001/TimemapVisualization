@@ -108,10 +108,24 @@ function main () {
 
    var endpoint = new PublicEndpoint()
 
-  // Initialize the server based and perform the "respond" call back when a client attempts to interact with the script
-  // http.createServer(respond).listen(thumbnailServicePort)
+  //This route is just for testing
   app.get('/hello', (request, response) => {
-    response.send('Hello from Express!')
+
+        var headers = {}
+
+        // IE8 does not allow domains to be specified, just the *
+        // headers['Access-Control-Allow-Origin'] = req.headers.origin
+        headers['Access-Control-Allow-Origin'] = '*'
+        headers['Access-Control-Allow-Methods'] = 'GET'
+        headers['Access-Control-Allow-Credentials'] = false
+        headers['Access-Control-Max-Age'] = '86400'  // 24 hours
+        headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Accept-Datetime'
+        headers['Content-Type'] = 'application/json' // text/html
+          var query = url.parse(request.url, true).query
+          console.log(JSON.stringify(query))
+        response.writeHead(200, headers)
+        response.write('Hello from what ever!')
+        response.end()
   })
 
   // this is the actually place that hit the main server logic
@@ -134,39 +148,45 @@ function main () {
 function PublicEndpoint () {
   var theEndPoint = this
 
+
+  // Parameters supplied for means of access:
+  this.validSource = ['archiveit', 'internetarchive'];
+
+  this.isAValidSourceParameter = function (accessParameter) {
+    return theEndPoint.validSource.indexOf(accessParameter) > -1
+  }
+
+
+
   /**
   * Handle an HTTP request and respond appropriately
   * @param request  The request object from the client representing query information
   * @param response Currently active HTTP response to the client used to return information to the client based on the request
   */
   this.respondToClient = function (request, response) {
+    response.clientId = Math.random() * 101 | 0  // Associate a simple random integer to the user for logging (this is not scalable with the implemented method)
     var headers = {}
-    var response ={}
-    var URIRFromCLI = ""
 
-    // if (process.argv.length <= 2) {
-    //     ConsoleLogIfRequired("No Arguments given");
-    //     process.exit(-1);
-    // }else{
-    //   var param = process.argv[2];
-    //   ConsoleLogIfRequired('Param: ' + param);
-    //   process.exit(-1);
-    // }
-    ConsoleLogIfRequired("argv:"+ JSON.stringify(argv))
-    ConsoleLogIfRequired("argv url :"+ argv["_"][0])
-    ConsoleLogIfRequired("argv length:"+ argv.length)
-    ConsoleLogIfRequired("isDebugMode:"+isDebugMode)
+    // IE8 does not allow domains to be specified, just the *
+    // headers['Access-Control-Allow-Origin'] = req.headers.origin
+    headers['Access-Control-Allow-Origin'] = '*'
+    headers['Access-Control-Allow-Methods'] = 'GET'
+    headers['Access-Control-Allow-Credentials'] = false
+    headers['Access-Control-Max-Age'] = '86400'  // 24 hours
+    headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Accept-Datetime'
 
-    if (process.argv.length <= 2) {
-        ConsoleLogIfRequired('No Argument was passed.. Trying with URI-R = http://www.cs.odu.edu/~mweigle/Research/')
-        URIRFromCLI = '/?URI-R=http://www.cs.odu.edu/~mweigle/Research/'
-    }else{
-        URIRFromCLI = '/?URI-R='+process.argv[2]
+    if (request.method !== 'GET') {
+      console.log('Bad method ' + request.method + ' sent from client. Try HTTP GET')
+      response.writeHead(405, headers)
+      response.end()
+      return
     }
 
-    ConsoleLogIfRequired('URI-R From CLI: ' + URIRFromCLI)
 
-    var query = url.parse(URIRFromCLI, true).query
+  //  var response ={}
+    var URIRFromCLI = "";
+
+    var query = url.parse(request.url, true).query
     ConsoleLogIfRequired("--- ByMahee: Query URL from client = "+ JSON.stringify(query))
     /******************************
        IMAGE PARAMETER - allows binary image data to be returned from service
@@ -188,54 +208,69 @@ function PublicEndpoint () {
       return (uri.substr(0, 5) === '/http')
     }
 
-    if (query['URI-R']) { // URI-R is specied as a query parameter
-      ConsoleLogIfRequired('URI-R valid, using query parameter.')
+    if (!query['URI-R'] && // a URI-R was not passed via the query string...
+        request._parsedUrl && !isARESTStyleURI(request._parsedUrl.pathname.substr(0, 5))) { // ...or the REST-style specification
+      console.log('No URI-R sent with request. ' + request.url + ' was sent. Try ' + thumbnailServer + '/?URI-R=http://matkelly.com')
+      response.writeHead(400, headers)
+      response.write('No URI-R Sent with the request')
+      response.end()
+      return
+    } else if (request._parsedUrl && !query['URI-R']) {
+      // Populate query['URI-R'] with REST-style URI and proceed like nothing happened
+      query['URI-R'] = request._parsedUrl.pathname.substr(1)
+    } else if (query['URI-R']) { // URI-R is specied as a query parameter
+      console.log('URI-R valid, using query parameter.')
     }
+
 
     // ByMahee --- Actually URI is being set here
     uriR = query['URI-R']
     ConsoleLogIfRequired("--ByMahee: uriR = "+uriR)
 
-    var access = theEndPoint.validAccessParameters[0] // Not specified? access=interface
+
+    var primeSource = theEndPoint.validSource[0] // Not specified? access=interface
     // Override the default access parameter if the user has supplied a value
     //  via query parameters
-    if (query.access) {
-      access = query.access
+    if (query.primesource) {
+      primeSource = query.primesource
     }
 
-    if (!theEndPoint.isAValidAccessParameter(access)) { // A bad access parameter was passed in
-      ConsoleLogIfRequired('Bad access query parameter: ' + access)
-      return
-    }
-
-    headers['X-Means-Of-Access'] = access
-
-    var strategy = theEndPoint.validStrategyParameters[0] // Not specified? access=interface
-    var strategyHeuristic = true // If no strategy is expicitly specified, test-and-guess
-
-    if (query.strategy) {
-      strategy = query.strategy
-      strategyHeuristic = false
-    }
-
-    if (!theEndPoint.isAValidStrategyParameter(strategy)) { // A bad strategy parameter was passed in
-      ConsoleLogIfRequired('Bad strategy query parameter: ' + strategy)
+    if (!theEndPoint.isAValidSourceParameter(primeSource)) { // A bad access parameter was passed in
+      console.log('Bad source query parameter: ' + primeSource)
       response.writeHead(501, headers)
-      response.write('The strategy parameter was incorrect. Try one of ' + theEndPoint.validStrategyParameters.join(',') + ' or omit it entirely from the query string\r\n')
+      response.write('The source parameter was incorrect. Try one of ' + theEndPoint.validSource.join(',') + ' or omit it entirely from the query string\r\n')
       response.end()
       return
     }
 
+    headers['X-Means-Of-Source'] = primeSource
+
+    var strategy = "alSummarization"
     headers['X-Summarization-Strategy'] = strategy
+
+    if(primeSource == 'archiveit'){
+      primeSrc = 1
+
+    }else if(primeSource == 'internetarchive'){
+      primeSrc = 2
+    }else{
+        primeSrc = 3
+    }
+
 
     if (!uriR.match(/^[a-zA-Z]+:\/\//)) {
       uriR = 'http://' + uriR
     }// Prepend scheme if missing
 
 
-    headers['Content-Type'] = 'text/html' // application/json
+    headers['Content-Type'] = 'application/json' //'text/html'
+    response.writeHead(200, headers)
+    // response.write('New client request URI-R: ' + query['URI-R'] + '\r\n> Primesource: ' + primeSource + '\r\n> Strategy: ' + strategy);
+    // response.end()
 
-    ConsoleLogIfRequired('New client request URI-R: ' + query['URI-R'] + '\r\n> Access: ' + access + '\r\n> Strategy: ' + strategy)
+    ConsoleLogIfRequired('New client request URI-R: ' + query['URI-R'] + '\r\n> Primesource: ' + primeSource + '\r\n> Strategy: ' + strategy)
+
+
 
     if (!validator.isURL(uriR)) { // Return "invalid URL"
       consoleLogJSONError('Invalid URI')
@@ -246,10 +281,21 @@ function PublicEndpoint () {
       ConsoleLogIfRequired('{"Error": "' + str + '"}')
     }
 
+    collectionIdentifier = 'all'
+
+    if(query.ci != '' && query.ci != null){
+      collectionIdentifier = parseInt(query.ci)
+    }
+
+
+
     // ByMahee -- setting the  incoming data from request into response Object
     response.thumbnails = [] // Carry the original query parameters over to the eventual response
-    response.thumbnails['access'] = access
+    response.thumbnails['primesource'] = primeSource
     response.thumbnails['strategy'] = strategy
+    response.thumbnails['collectionidentifier'] = collectionIdentifier
+
+
 
     /*TODO: include consideration for strategy parameter supplied here
             If we consider the strategy, we can simply use the TimeMap instead of the cache file
@@ -394,6 +440,7 @@ function processWithFileContents (fileContents, response) {
       t.createScreenshotsForMementos(function () {
         ConsoleLogIfRequired.log('Done creating screenshots')
       })
+      t.writeThumbSumJSONOPToCache(response)
     }
 }
 
@@ -600,6 +647,8 @@ function getTimemapGodFunctionForAlSummarization (uri, response) {
 
             if (t.mementos.length === 0) {
             ConsoleLogIfRequired('There were no mementos for ' + uri + ' :(')
+            response.write('There were no mementos for ' + uri + ' :(')
+            response.end()
               return
             }
 
@@ -659,7 +708,6 @@ function getTimemapGodFunctionForAlSummarization (uri, response) {
         }
     },
     //function (callback) {t.writeJSONToCache(callback)},
-    function (callback) {t.writeThumbSumJSONOPToCache(callback)},
     function (callback) {
         if(isToComputeBoth){
           t.createScreenshotsForMementos(callback);
@@ -667,7 +715,9 @@ function getTimemapGodFunctionForAlSummarization (uri, response) {
         else if (callback) {
           callback('')
         }
-    }
+    },
+    function (callback) {t.writeThumbSumJSONOPToCache(response,callback)},
+
 
 
 
@@ -797,7 +847,7 @@ $(document).ready(function () {
 </script>
 <script src="${localAssetServer}util.js"></script>
 </head>
-<body data-access="${response.thumbnails.access}" data-strategy="${response.thumbnails.strategy}">
+<body data-access="${response.thumbnails.primesource}" data-strategy="${response.thumbnails.strategy}">
 <h1 class="interface">${uriR}</h1>
 <section id="subnav">
 <form method="get" action="/">
@@ -916,7 +966,7 @@ TimeMap.prototype.writeJSONToCache = function (callback) {
 * Converts the JsonOutput from the current formate to the format required for timemap plugin
 * and saves in a json file
 */
-TimeMap.prototype.writeThumbSumJSONOPToCache = function (callback) {
+TimeMap.prototype.writeThumbSumJSONOPToCache = function (response,callback) {
 
   var month_names_short= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   var mementoJObjArrForTimeline=[];
@@ -961,6 +1011,8 @@ TimeMap.prototype.writeThumbSumJSONOPToCache = function (callback) {
 
   var cacheFile = new SimhashCacheFile(this.originalURI,isDebugMode)
   cacheFile.writeThumbSumJSONOPContentToFile(JSON.stringify(mementoJObjArrForTimeline))
+  response.write(JSON.stringify(mementoJObjArrForTimeline))
+  response.end()
   ConsoleLogIfRequired("--------------------- Json Array for TimeLine from  writeThumbSumJSONOPToCache------------------------------")
   ConsoleLogIfRequired(JSON.stringify(mementoJObjArrForTimeline))
   ConsoleLogIfRequired("------------------------------------------------------------------------------------------------------------")

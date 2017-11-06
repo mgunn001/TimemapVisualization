@@ -1,5 +1,5 @@
 FROM    ubuntu:16.04
-LABEL   maintainer="Mat Kelly <mkelly@cs.odu.edu>"
+LABEL   maintainer="Maheedhar Gunnam <mgunnam@cs.odu.edu>"
 
 EXPOSE  15421 15422 1338
 WORKDIR /app
@@ -19,4 +19,4 @@ COPY    ./package.json /app/
 RUN     npm install
 COPY    . /app
 
-CMD     ["node", "AlSummarization.js"]
+CMD     ["node", "AlSummarization_OPT_CLI_JSON.js"]
