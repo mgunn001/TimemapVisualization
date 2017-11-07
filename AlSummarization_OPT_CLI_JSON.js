@@ -73,10 +73,11 @@ var prompt = require('prompt')
 var zlib = require('zlib')
 var app = express()
 var host = 'http://localhost' // Format: scheme://hostname
-const thumbnailServicePort = 3000
-var localAssetServerPort = argv.ap ? argv.a : 3001
+var thumbnailServicePort = argv.p ? argv.p :3000
+var localAssetServerPort = argv.ap ? argv.ap : 3001
 
 var thumbnailServer = host + ':' + thumbnailServicePort + '/'
+var localAssetServer = host + ':' + localAssetServerPort + '/'
 
 
 var uriR = ''
@@ -1017,11 +1018,13 @@ TimeMap.prototype.writeThumbSumJSONOPToCache = function (response,callback) {
     mementoJObj_ForTimeline["timestamp"] = Number(dt)/1000
     if(memento.screenshotURI == null || memento.screenshotURI==''){
       mementoJObj_ForTimeline["event_series"] = "Non-Thumbnail Mementos"
-      mementoJObj_ForTimeline["event_html"] = "<img src='http://www.cs.odu.edu/~mgunnam/TimeMapSummarization/photos/notcaptured.png' width='300px' />"
+      mementoJObj_ForTimeline["event_html"] = "<img src='"+localAssetServer+"screenshots/notcaptured.png' width='300px' />"
+      mementoJObj_ForTimeline["event_html_similarto"] = "<img src='"+localAssetServer+"screenshots/"+memento.hammingBasisScreenshotURI +"' width='300px' />"
+
     }else{
       var filename = 'timemapSum_' + uri.replace(/[^a-z0-9]/gi, '').toLowerCase() + '.png'  // Sanitize URI->filename
       mementoJObj_ForTimeline["event_series"] = "Thumbnails"
-      mementoJObj_ForTimeline["event_html"] = "<img src='http://www.cs.odu.edu/~mgunnam/TimeMapSummarization/photos/"+memento.screenshotURI +"' width='300px' />"
+      mementoJObj_ForTimeline["event_html"] = "<img src='"+localAssetServer+"photos/"+memento.screenshotURI +"' width='300px' />"
     }
 
     mementoJObj_ForTimeline["event_date"] =  month_names_short[ parseInt(month)]+". "+date +", "+ dt.getUTCFullYear()
@@ -1060,6 +1063,8 @@ TimeMap.prototype.supplyChosenMementosBasedOnHammingDistanceAScreenshotURI = fun
     if (memento.hammingDistance < HAMMING_DISTANCE_THRESHOLD  && memento.hammingDistance >= 0) {
       // ConsoleLogIfRequired(memento.uri+" is below the hamming distance threshold of "+HAMMING_DISTANCE_THRESHOLD)
       memento.screenshotURI = null
+      var filename = 'timemapSum_' + memento.hammingBasisURI.replace("id_/http:","/http:").replace(/[^a-z0-9]/gi, '').toLowerCase() + '.png'  // Sanitize URI->filename
+      memento.hammingBasisScreenshotURI = filename
     } else {
       var filename = 'timemapSum_' + uri.replace(/[^a-z0-9]/gi, '').toLowerCase() + '.png'  // Sanitize URI->filename
       memento.screenshotURI = filename
@@ -1340,6 +1345,7 @@ TimeMap.prototype.calculateHammingDistancesWithOnlineFiltering = function (callb
       this.mementos[m].hammingDistance = getHamming(this.mementos[m].simhash, this.mementos[lastSignificantMementoIndexBasedOnHamming].simhash)
       // ConsoleLogIfRequired("Getting hamming basis")
       this.mementos[m].hammingBasis = this.mementos[lastSignificantMementoIndexBasedOnHamming].datetime
+      this.mementos[m].hammingBasisURI= this.mementos[lastSignificantMementoIndexBasedOnHamming].uri
 
       // ConsoleLogIfRequired('Comparing hamming distances (simhash,uri) = ' + this.mementos[m].hammingDistance + '\n' +
       //   ' > testing: ' + this.mementos[m].simhash + ' ' + this.mementos[m].uri + '\n' +
