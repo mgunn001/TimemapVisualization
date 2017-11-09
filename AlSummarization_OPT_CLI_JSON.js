@@ -133,7 +133,7 @@ function main () {
   })
 
   // this is the actually place that hit the main server logic
-  app.get('/*', endpoint.respondToClient)
+  app.get('/GetResponse', endpoint.respondToClient)
 
   app.listen(thumbnailServicePort, (err) => {
     if (err) {
@@ -1024,7 +1024,7 @@ TimeMap.prototype.writeThumbSumJSONOPToCache = function (response,callback) {
     }else{
       var filename = 'timemapSum_' + uri.replace(/[^a-z0-9]/gi, '').toLowerCase() + '.png'  // Sanitize URI->filename
       mementoJObj_ForTimeline["event_series"] = "Thumbnails"
-      mementoJObj_ForTimeline["event_html"] = "<img src='"+localAssetServer+"photos/"+memento.screenshotURI +"' width='300px' />"
+      mementoJObj_ForTimeline["event_html"] = "<img src='"+localAssetServer+"screenshots/"+memento.screenshotURI +"' width='300px' />"
     }
 
     mementoJObj_ForTimeline["event_date"] =  month_names_short[ parseInt(month)]+". "+date +", "+ dt.getUTCFullYear()
