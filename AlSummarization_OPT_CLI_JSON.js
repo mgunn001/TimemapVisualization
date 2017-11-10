@@ -109,7 +109,7 @@ function main () {
                '*******************************').blue)
   ConsoleLogIfRequired("--By Mahee - for understanding")
 
-  startLocalAssetServer() - //- Now everything is made to be served from the same port.
+  startLocalAssetServer()  //- Now everything is made to be served from the same port.
   var endpoint = new PublicEndpoint()
 
   //This route is just for testing
