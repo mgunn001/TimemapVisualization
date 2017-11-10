@@ -3,6 +3,9 @@ var fs = require("fs");
 function SimhashCacheFile(forUri, isDebugMode){
 
 		//operation = "replace","append","read"
+		console.log("foruri->"+forUri )
+		console.log("isDebugmode->"+isDebugMode )
+
 		this.isDebugMode = isDebugMode
 		//TODO, check if it already exists
 		this.path = './cache/simhashes_' + forUri.replace(/[^a-z0-9]/gi, '').toLowerCase();

@@ -454,6 +454,7 @@ function cleanSystemData (cb) {
 function processWithFileContents (fileContents, response) {
 
   var t = createMementosFromJSONFile(fileContents)
+   t.originalURI = uriR
   /* ByMahee -- unnessessary for the current need
   t.printMementoInformation(response, null, false) */
 
@@ -461,12 +462,21 @@ function processWithFileContents (fileContents, response) {
   ConsoleLogIfRequired("**************************************************************************************************");
   console.log(JSON.stringify(t));
     if(isToComputeBoth){
-      t.calculateHammingDistancesWithOnlineFiltering()
-      t.supplyChosenMementosBasedOnHammingDistanceAScreenshotURI()
-      t.createScreenshotsForMementos(function () {
-        ConsoleLogIfRequired.log('Done creating screenshots')
-      })
-      t.writeThumbSumJSONOPToCache(response)
+        async.series([
+          function (callback) {t.calculateHammingDistancesWithOnlineFiltering(callback)},
+          function (callback) {t.supplyChosenMementosBasedOnHammingDistanceAScreenshotURI(callback)},
+          function (callback) {t.createScreenshotsForMementos(callback)},
+          function (callback) {t.writeThumbSumJSONOPToCache(response)}
+        ],
+        function (err, result) {
+          if (err) {
+            console.log('ERROR!')
+            console.log(err)
+          } else {
+            console.log('There were no errors executing the callback chain')
+          }
+        }
+      )
     }
 }
 
@@ -733,7 +743,7 @@ function getTimemapGodFunctionForAlSummarization (uri, response) {
           callback('')
         }
     },
-    //function (callback) {t.writeJSONToCache(callback)},
+    function (callback) {t.writeJSONToCache(callback)},
     function (callback) {
         if(isToComputeBoth){
           t.createScreenshotsForMementos(callback);
@@ -1050,8 +1060,6 @@ TimeMap.prototype.writeThumbSumJSONOPToCache = function (response,callback) {
 }
 
 
-
-
 /**
 * Converts the target URI to a safe semantic filename and attaches to relevant memento.
 * Selection based on passing a hamming distance threshold
@@ -1255,6 +1263,8 @@ TimeMap.prototype.createScreenshotsForMementos = function (callback, withCriteri
   if (withCriteria) {
     criteria = withCriteria
   }
+  console.log("------------------ selected for screenshots------------")
+  console.log(JSON.stringify(self.mementos.filter(criteria)))
 
   async.eachLimit(
     shuffleArray(self.mementos.filter(criteria)), // Array of mementos to randomly // shuffleArray(self.mementos.filter(hasScreenshot))
