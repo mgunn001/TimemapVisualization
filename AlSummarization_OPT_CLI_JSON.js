@@ -109,7 +109,7 @@ function main () {
                '*******************************').blue)
   ConsoleLogIfRequired("--By Mahee - for understanding")
 
-  startLocalAssetServer()
+  startLocalAssetServer() - //- Now everything is made to be served from the same port.
   var endpoint = new PublicEndpoint()
 
   //This route is just for testing
@@ -133,7 +133,10 @@ function main () {
   })
 
   // this is the actually place that hit the main server logic
-  app.get('/GetResponse', endpoint.respondToClient)
+  app.get('/alsummarizedtimemap', endpoint.respondToClient)
+
+  app.use('/static', express.static(path.join(__dirname, 'screenshots')))
+
 
   app.listen(thumbnailServicePort, (err) => {
     if (err) {
