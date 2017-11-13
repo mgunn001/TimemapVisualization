@@ -1283,7 +1283,7 @@ TimeMap.prototype.createScreenshotsForMementos = function (callback, withCriteri
 
 TimeMap.prototype.createScreenshotForMemento = function (memento, callback) {
   var uri = memento.uri
-  uri = uri.replace("id_/http:","/http:");
+  uri = uri.replace("id_/http:","if_/http:");
   var filename = memento.screenshotURI
 
   try {
